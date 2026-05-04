@@ -13,7 +13,7 @@ jobs:
         id:  linear
         run: |
           response=$(curl https://api.linear.app/graphql \
-            -H "Authorization: Bearer ${{ secrets.LINEAR_API_KEY }}" \
+            -H "Authorization: ${{ secrets.LINEAR_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"query":"{ issues(first: 3) { nodes { title } } }"}'
           )
