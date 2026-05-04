@@ -4,10 +4,20 @@ on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Get Linear data 
+        id:  linear
+        run: |
+          response=$(curl https://api.linear.app/graphql \
+            -H "Authorization: Bearer ${{ secrets.LINEAR_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"query":"{ issues(first: 3) { nodes { title } } }"}'
+
+          echo "result=$response" >> $GITHUB_OUTPUT
       - name: Send mail
         uses: dawidd6/action-send-mail@v6
         with:
@@ -16,7 +26,9 @@ jobs:
           secure: true
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASS }}
-          subject: テストメール
+          subject: Linear data
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.EMAIL_USER }}
-          body: Hello！メール送信テスト成功
+          body: ${{ steps.linear.outputs.result }}
+
+          
