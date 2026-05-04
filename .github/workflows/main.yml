@@ -16,8 +16,9 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.LINEAR_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"query":"{ issues(first: 3) { nodes { title } } }"}'
+          )
 
-          echo "result=$response" >> $GITHUB_OUTPUT
+          echo  "result=$response" >> $GITHUB_OUTPUT
       - name: Send mail
         uses: dawidd6/action-send-mail@v6
         with:
