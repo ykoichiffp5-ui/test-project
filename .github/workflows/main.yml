@@ -1,35 +1,42 @@
-name: Send Mail
+name: Auto Dashboard
 
 on:
+  workflow_dispatch: # 手動実行
   schedule:
-    - cron: '*/5 * * * *'
-  workflow_dispatch:
+    - cron: "0 9 * * *" # 毎日9時
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Get Linear data 
-        id:  linear
-        run: |
-          response=$(curl https://api.linear.app/graphql \
-            -H "Authorization: ${{ secrets.LINEAR_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d '{"query":"{ issues(first: 3) { nodes { title } } }"}'
-          )
+      - name: Checkout
+        uses: actions/checkout@v4
 
-          echo  "result=$response" >> $GITHUB_OUTPUT
-      - name: Send mail
-        uses: dawidd6/action-send-mail@v6
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.EMAIL_USER }}
-          password: ${{ secrets.EMAIL_PASS }}
-          subject: Linear data
-          to: ${{ secrets.EMAIL_TO }}
-          from: ${{ secrets.EMAIL_USER }}
-          body: ${{ steps.linear.outputs.result }}
+          node-version: "18"
 
-          
+      # 👇 Linearデータ取得（ここ重要）
+      - name: Fetch Linear Data
+        id: fetch
+        run: |
+          response=$(curl -s -X POST https://api.linear.app/graphql \
+          -H "Authorization: $LINEAR_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{"query":"{ issues { nodes { title } } }"}')
+
+          echo "data=$response" >> $GITHUB_OUTPUT
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+
+      # 👇 ここで generate.js 実行
+      - name: Generate HTML
+        run: node generate.js
+        env:
+          LINEAR_DATA: ${{ steps.fetch.outputs.data }}
+
+      # 👇 確認用（ログに出る）
+      - name: Check dist
+        run: ls -R
