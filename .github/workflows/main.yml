@@ -50,3 +50,15 @@ jobs:
          surge ./dist koichi-dashboard.surge.sh --token $SURGE_TOKEN
         env:
          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+
+      - name: Send Email
+        uses: dawidd6/action-send-mail@v3
+        with:
+           server_address: smtp.gmail.com
+           server_port: 465
+           username: ${{ secrets.EMAIL_USER }}
+           password: ${{ secrets.EMAIL_PASS }}
+           subject: ダッシュボード更新
+           to: ${{ secrets.EMAIL_TO }}
+           from: Dashboard Bot
+           html_body: file://dist/index.html
