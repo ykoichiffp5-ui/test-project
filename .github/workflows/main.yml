@@ -38,9 +38,11 @@ jobs:
       - name: Generate HTML
         run: node generate.js
         env:
-          LINEAR_DATA: ${{ steps.fetch.outputs.data }}
+         LINEAR_DATA: ${{ steps.fetch.outputs.data }}
 
-      # 👇 確認用（ログに出る）
+      - name: Debug HTML
+        run: cat dist/index.html
+        
       - name: Check dist
         run: ls -R
         
