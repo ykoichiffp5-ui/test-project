@@ -28,7 +28,7 @@ jobs:
           response=$(curl -s -X POST https://api.linear.app/graphql \
           -H "Authorization: $LINEAR_API_KEY" \
           -H "Content-Type: application/json" \
-          -d { issues(first: 5) { nodes { title } } 
+          -d '{"query":"{ issues(first: 5) { nodes { title } } }"}')
 
           echo "data=$response" >> $GITHUB_OUTPUT
         env:
