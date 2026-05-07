@@ -10,7 +10,9 @@ if (!raw) {
 const data = JSON.parse(raw);
 const issues = data.data.issues.nodes;
 
-const today = new Date().toLocaleString("ja-JP");
+const today = new Date().toLocaleString("ja-JP", {
+  timeZone: "Asia/Tokyo"
+});
 
 const html = `
 <!DOCTYPE html>
@@ -36,6 +38,7 @@ const html = `
       text-align: center;
       color: #999;
       margin-bottom: 30px;
+      font-size: 18px;
     }
 
     .calendar {
@@ -92,6 +95,7 @@ const html = `
   <div class="calendar">
 
     ${issues.map(issue => {
+
       let statusClass = "todo";
 
       if (issue.state.name === "In Progress") {
@@ -130,6 +134,7 @@ const html = `
 fs.mkdirSync("dist", { recursive: true });
 
 fs.writeFileSync("dist/index.html", html);
+
 
 console.log("HTML生成完了！");
 
