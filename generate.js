@@ -3,83 +3,75 @@ const fs = require("fs");
 const raw = process.env.LINEAR_DATA;
 
 if (!raw) {
-  console.error("LINEAR_DATA が空です");
+  console.error("LINEAR_DATAが空です");
   process.exit(1);
 }
 
 const data = JSON.parse(raw);
 const issues = data.data.issues.nodes;
 
-const today = new Date().toLocaleString("ja-JP", {
-  timeZone: "Asia/Tokyo"
-});
-
 const html = `
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Linear Dashboard</title>
 
   <style>
     body {
       font-family: sans-serif;
-      padding: 20px;
-      background: #111;
+      background: #0f1117;
       color: white;
+      padding: 30px;
     }
 
     h1 {
+      font-size: 48px;
       margin-bottom: 10px;
-      text-align: center;
     }
 
     .updated {
-      text-align: center;
       color: #999;
       margin-bottom: 30px;
-      font-size: 18px;
-    }
-
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
+      font-size: 20px;
     }
 
     .card {
-      background: #1e1e1e;
-      border-radius: 16px;
-      padding: 20px;
-      border: 1px solid #333;
+      background: #f3f3f3;
+      color: #111;
+      border-radius: 30px;
+      padding: 30px;
+      margin-bottom: 25px;
     }
 
-    .title {
-      font-size: 24px;
-      font-weight: bold;
+    .card h2 {
+      font-size: 42px;
       margin-bottom: 20px;
+      color: #ffffff;
     }
 
     .status {
-      font-size: 18px;
-    }
-
-    .todo {
-      color: #facc15;
-    }
-
-    .progress {
-      color: #60a5fa;
-    }
-
-    .done {
-      color: #4ade80;
-    }
-
-    .date {
+      font-size: 26px;
+      color: #8a6b00;
       margin-top: 15px;
-      color: #999;
-      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 24px;
+      line-height: 1.8;
+      color: #444;
+      margin-top: 20px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 60px;
+      color: #888;
+      font-size: 18px;
     }
   </style>
 </head>
@@ -89,42 +81,25 @@ const html = `
   <h1>📅 Linear Calendar Dashboard</h1>
 
   <div class="updated">
-    🕒 Updated: ${today}
+    🕒 Updated: ${new Date().toLocaleString("ja-JP")}
   </div>
 
-  <div class="calendar">
+  ${issues.map(issue => `
+    <div class="card">
 
-    ${issues.map(issue => {
+      <h2>${issue.title}</h2>
 
-      let statusClass = "todo";
+      <div class="status">
+        ● ${issue.state.name}
+      </div>
 
-      if (issue.state.name === "In Progress") {
-        statusClass = "progress";
-      }
+      <pre>${issue.description || "データなし"}</pre>
 
-      if (issue.state.name === "Done") {
-        statusClass = "done";
-      }
+    </div>
+  `).join("")}
 
-      return `
-        <div class="card">
-
-          <div class="title">
-            ${issue.title}
-          </div>
-
-          <div class="status ${statusClass}">
-            ● ${issue.state.name}
-          </div>
-
-          <div class="date">
-            Updated from Linear
-          </div>
-
-        </div>
-      `;
-    }).join("")}
-
+  <div class="footer">
+    Updated from Linear
   </div>
 
 </body>
@@ -132,9 +107,6 @@ const html = `
 `;
 
 fs.mkdirSync("dist", { recursive: true });
-
 fs.writeFileSync("dist/index.html", html);
 
-
-console.log("HTML生成完了！");
-
+console.log("Dashboard generated!");
