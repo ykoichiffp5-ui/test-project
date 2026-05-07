@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # 手動実行
+  workflow_dispatch:
   schedule:
-    - cron: "0 9 * * *" # 毎日9時
+    - cron: "0 9 * * *"
 
 jobs:
   build:
@@ -21,46 +21,59 @@ jobs:
         with:
           node-version: "18"
 
-      # 👇 Linearデータ取得（ここ重要）
+      # 👇 Linearデータ取得
       - name: Fetch Linear Data
         id: fetch
         run: |
           response=$(curl -s -X POST https://api.linear.app/graphql \
           -H "Authorization: $LINEAR_API_KEY" \
           -H "Content-Type: application/json" \
-          -d '{"query":"{ issues(first: 5) { nodes { title } } }"}')
+          -d '{"query":"{
+            issues(first: 10) {
+              nodes {
+                title
+                priority
+                state {
+                  name
+                }
+                assignee {
+                  name
+                }
+              }
+            }
+          }"}')
 
           echo "data=$response" >> $GITHUB_OUTPUT
         env:
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
 
-      # 👇 ここで generate.js 実行
+      # 👇 generate.js 実行
       - name: Generate HTML
         run: node generate.js
         env:
-         LINEAR_DATA: ${{ steps.fetch.outputs.data }}
+          LINEAR_DATA: ${{ steps.fetch.outputs.data }}
 
       - name: Debug HTML
         run: cat dist/index.html
-        
+
       - name: Check dist
         run: ls -R
-        
+
       - name: Deploy to Surge
         run: |
-         npm install -g surge
-         surge ./dist koichi-dashboard.surge.sh --token $SURGE_TOKEN
+          npm install -g surge
+          surge ./dist koichi-dashboard.surge.sh --token $SURGE_TOKEN
         env:
-         SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
 
       - name: Send Email
         uses: dawidd6/action-send-mail@v3
         with:
-           server_address: smtp.gmail.com
-           server_port: 465
-           username: ${{ secrets.EMAIL_USER }}
-           password: ${{ secrets.EMAIL_PASS }}
-           subject: ダッシュボード更新
-           to: ${{ secrets.EMAIL_TO }}
-           from: Dashboard Bot
-           html_body: file://dist/index.html
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: ダッシュボード更新
+          to: ${{ secrets.EMAIL_TO }}
+          from: Dashboard Bot
+          html_body: file://dist/index.html
