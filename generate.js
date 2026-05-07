@@ -10,6 +10,8 @@ if (!raw) {
 const data = JSON.parse(raw);
 const issues = data.data.issues.nodes;
 
+const today = new Date().toLocaleString("ja-JP");
+
 const html = `
 <!DOCTYPE html>
 <html>
@@ -26,25 +28,55 @@ const html = `
     }
 
     h1 {
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .updated {
+      text-align: center;
+      color: #999;
       margin-bottom: 30px;
     }
 
     .calendar {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
     }
 
     .card {
-      background: #222;
+      background: #1e1e1e;
+      border-radius: 16px;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      border: 1px solid #333;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
 
     .status {
-      margin-top: 10px;
-      color: #aaa;
+      font-size: 18px;
+    }
+
+    .todo {
+      color: #facc15;
+    }
+
+    .progress {
+      color: #60a5fa;
+    }
+
+    .done {
+      color: #4ade80;
+    }
+
+    .date {
+      margin-top: 15px;
+      color: #999;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -53,16 +85,41 @@ const html = `
 
   <h1>📅 Linear Calendar Dashboard</h1>
 
+  <div class="updated">
+    🕒 Updated: ${today}
+  </div>
+
   <div class="calendar">
 
-    ${issues.map(issue => `
-      <div class="card">
-        <h2>${issue.title}</h2>
-        <div class="status">
-          🟡 ${issue.state.name}
+    ${issues.map(issue => {
+      let statusClass = "todo";
+
+      if (issue.state.name === "In Progress") {
+        statusClass = "progress";
+      }
+
+      if (issue.state.name === "Done") {
+        statusClass = "done";
+      }
+
+      return `
+        <div class="card">
+
+          <div class="title">
+            ${issue.title}
+          </div>
+
+          <div class="status ${statusClass}">
+            ● ${issue.state.name}
+          </div>
+
+          <div class="date">
+            Updated from Linear
+          </div>
+
         </div>
-      </div>
-    `).join("")}
+      `;
+    }).join("")}
 
   </div>
 
@@ -75,3 +132,4 @@ fs.mkdirSync("dist", { recursive: true });
 fs.writeFileSync("dist/index.html", html);
 
 console.log("HTML生成完了！");
+
