@@ -10,13 +10,22 @@ if (!raw) {
 const data = JSON.parse(raw);
 const issues = data.data.issues.nodes;
 
-let cards = "";
+let calendarItems = "";
 
 issues.forEach(issue => {
-  cards += `
-    <div class="card">
-      <div class="title">${issue.title}</div>
-      <div class="state">${issue.state.name}</div>
+  const title = issue.title || "タイトルなし";
+  const state = issue.state?.name || "未設定";
+  const date = issue.createdAt
+    ? new Date(issue.createdAt).toLocaleDateString("ja-JP")
+    : "日付なし";
+
+  calendarItems += `
+    <div class="event">
+      <div class="date">${date}</div>
+      <div class="content">
+        <div class="title">${title}</div>
+        <div class="state">${state}</div>
+      </div>
     </div>
   `;
 });
@@ -27,33 +36,50 @@ const html = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Linear介護ダッシュボード</title>
+  <title>Linear介護カレンダー</title>
 
   <style>
     body {
       font-family: sans-serif;
-      background: #f4f7fb;
-      margin: 0;
+      background: #f3f4f6;
       padding: 20px;
+      margin: 0;
     }
 
     h1 {
       text-align: center;
-      color: #333;
       margin-bottom: 30px;
+      color: #222;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
+    .calendar {
+      max-width: 800px;
+      margin: auto;
     }
 
-    .card {
+    .event {
+      display: flex;
       background: white;
+      margin-bottom: 16px;
       border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .date {
+      min-width: 140px;
+      background: #4f46e5;
+      color: white;
       padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .content {
+      padding: 20px;
+      flex: 1;
     }
 
     .title {
@@ -65,20 +91,20 @@ const html = `
 
     .state {
       display: inline-block;
-      padding: 6px 12px;
-      border-radius: 999px;
       background: #eef2ff;
       color: #4f46e5;
+      padding: 6px 12px;
+      border-radius: 999px;
       font-size: 14px;
     }
   </style>
 </head>
 
 <body>
-  <h1>📊 Linear介護ダッシュボード</h1>
+  <h1>📅 Linear介護カレンダー</h1>
 
-  <div class="grid">
-    ${cards}
+  <div class="calendar">
+    ${calendarItems}
   </div>
 
 </body>
@@ -91,4 +117,4 @@ if (!fs.existsSync("dist")) {
 
 fs.writeFileSync("dist/index.html", html);
 
-console.log("ダッシュボード生成完了");
+console.log("カレンダー生成完了");
