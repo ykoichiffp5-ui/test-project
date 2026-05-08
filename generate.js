@@ -1,29 +1,29 @@
 const fs = require("fs");
 
-const raw = process.env.LINEAR_DATA;
-
-if (!raw) {
-  console.error("LINEAR_DATAが空です");
-  process.exit(1);
-}
+const raw = fs.readFileSync("linear-data.json", "utf8");
 
 const data = JSON.parse(raw);
+
 const issues = data.data.issues.nodes;
+
+const totalUsers = issues.length;
+
+const doneCount = issues.filter(
+  issue => issue.state.name === "Done"
+).length;
 
 const html = `
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Linear Dashboard</title>
+  <meta charset="UTF-8">
+  <title>介護ダッシュボード</title>
 
   <style>
     body {
       font-family: sans-serif;
-      background: #0f1117;
-      color: white;
-      padding: 30px;
+      background: #f5f5f5;
+      padding: 40px;
     }
 
     h1 {
@@ -32,74 +32,56 @@ const html = `
     }
 
     .updated {
-      color: #999;
+      color: #666;
       margin-bottom: 30px;
-      font-size: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
     }
 
     .card {
-      background: #f3f3f3;
-      color: #111;
-      border-radius: 30px;
+      background: white;
+      border-radius: 24px;
       padding: 30px;
-      margin-bottom: 25px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
 
-    .card h2 {
-      font-size: 42px;
-      margin-bottom: 20px;
-      color: #ffffff;
+    .label {
+      font-size: 22px;
+      color: #666;
+      margin-bottom: 15px;
     }
 
-    .status {
-      font-size: 26px;
-      color: #8a6b00;
-      margin-top: 15px;
-      margin-bottom: 20px;
-    }
-
-    pre {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      font-size: 24px;
-      line-height: 1.8;
-      color: #444;
-      margin-top: 20px;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 60px;
-      color: #888;
-      font-size: 18px;
+    .value {
+      font-size: 64px;
+      font-weight: bold;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>📅 Linear Calendar Dashboard</h1>
+  <h1>📊 介護ダッシュボード</h1>
 
   <div class="updated">
-    🕒 Updated: ${new Date().toLocaleString("ja-JP")}
+    更新: ${new Date().toLocaleString("ja-JP")}
   </div>
 
-  ${issues.map(issue => `
+  <div class="grid">
+
     <div class="card">
-
-      <h2>${issue.title}</h2>
-
-      <div class="status">
-        ● ${issue.state.name}
-      </div>
-
-      <pre>${issue.description || "データなし"}</pre>
-
+      <div class="label">利用者人数</div>
+      <div class="value">${totalUsers}人</div>
     </div>
-  `).join("")}
 
-  <div class="footer">
-    Updated from Linear
+    <div class="card">
+      <div class="label">完了件数</div>
+      <div class="value">${doneCount}件</div>
+    </div>
+
   </div>
 
 </body>
@@ -107,6 +89,7 @@ const html = `
 `;
 
 fs.mkdirSync("dist", { recursive: true });
+
 fs.writeFileSync("dist/index.html", html);
 
 console.log("Dashboard generated!");
