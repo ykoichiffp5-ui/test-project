@@ -3,12 +3,23 @@ const fs = require("fs");
 const raw = process.env.LINEAR_DATA;
 
 if (!raw) {
-  console.error("LINEAR_DATAが空です");
+  console.error("LINEAR_DATA が空です");
   process.exit(1);
 }
 
 const data = JSON.parse(raw);
 const issues = data.data.issues.nodes;
+
+let cards = "";
+
+issues.forEach(issue => {
+  cards += `
+    <div class="card">
+      <div class="title">${issue.title}</div>
+      <div class="state">${issue.state.name}</div>
+    </div>
+  `;
+});
 
 const html = `
 <!DOCTYPE html>
@@ -67,12 +78,7 @@ const html = `
   <h1>📊 Linear介護ダッシュボード</h1>
 
   <div class="grid">
-    ${issues.map(issue => `
-      <div class="card">
-        <div class="title">${issue.title}</div>
-        <div class="state">${issue.state.name}</div>
-      </div>
-    `).join("")}
+    ${cards}
   </div>
 
 </body>
