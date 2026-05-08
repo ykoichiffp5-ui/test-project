@@ -8,13 +8,21 @@ if (!raw) {
 }
 
 const data = JSON.parse(raw);
+
+if (!data.data || !data.data.issues) {
+  console.error("issues データがありません");
+  process.exit(1);
+}
+
 const issues = data.data.issues.nodes;
 
 let calendarItems = "";
 
 issues.forEach(issue => {
   const title = issue.title || "タイトルなし";
+
   const state = issue.state?.name || "未設定";
+
   const date = issue.createdAt
     ? new Date(issue.createdAt).toLocaleDateString("ja-JP")
     : "日付なし";
@@ -22,6 +30,7 @@ issues.forEach(issue => {
   calendarItems += `
     <div class="event">
       <div class="date">${date}</div>
+
       <div class="content">
         <div class="title">${title}</div>
         <div class="state">${state}</div>
@@ -36,6 +45,7 @@ const html = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Linear介護カレンダー</title>
 
   <style>
@@ -53,7 +63,7 @@ const html = `
     }
 
     .calendar {
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
     }
 
@@ -67,11 +77,12 @@ const html = `
     }
 
     .date {
-      min-width: 140px;
+      min-width: 150px;
       background: #4f46e5;
       color: white;
       padding: 20px;
       font-weight: bold;
+
       display: flex;
       align-items: center;
       justify-content: center;
@@ -101,6 +112,7 @@ const html = `
 </head>
 
 <body>
+
   <h1>📅 Linear介護カレンダー</h1>
 
   <div class="calendar">
