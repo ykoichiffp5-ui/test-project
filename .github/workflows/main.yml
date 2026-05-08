@@ -7,9 +7,6 @@ on:
     branches:
       - main
 
-  schedule:
-    - cron: "0 * * * *"
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -45,16 +42,10 @@ jobs:
             }"
           }' > linear-data.json
 
-      - name: Save Linear Data
-        run: |
-          {
-            echo 'LINEAR_DATA<<EOF'
-            cat linear-data.json
-            echo EOF
-          } >> $GITHUB_ENV
-
       - name: Generate Dashboard
-        run: node generate.js
+        run: |
+          export LINEAR_DATA="$(cat linear-data.json)"
+          node generate.js
 
       - name: Debug HTML
         run: cat dist/index.html
