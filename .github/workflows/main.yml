@@ -43,9 +43,7 @@ jobs:
           }' > linear-data.json
 
       - name: Generate Dashboard
-        run: |
-          export LINEAR_DATA="$(cat linear-data.json)"
-          node generate.js
+        run: node generate.js
 
       - name: Debug HTML
         run: cat dist/index.html
