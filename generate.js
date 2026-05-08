@@ -86,6 +86,3 @@ if (!fs.existsSync("dist")) {
 fs.writeFileSync("dist/index.html", html);
 
 console.log("ダッシュボード生成完了");
-
-
-
