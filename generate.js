@@ -8,105 +8,98 @@ if (!raw) {
 }
 
 const data = JSON.parse(raw);
+
 const issues = data.data.issues.nodes;
+
+const todo = issues.filter(
+  i => i.state && i.state.name === "Todo"
+);
+
+const inProgress = issues.filter(
+  i => i.state && i.state.name === "In Progress"
+);
+
+const done = issues.filter(
+  i => i.state && i.state.name === "Done"
+);
 
 const html = `
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Linear Dashboard</title>
+<meta charset="UTF-8">
+<title>Linear Dashboard</title>
 
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #0f1117;
-      color: white;
-      padding: 30px;
-    }
+<style>
+body{
+  font-family:sans-serif;
+  background:#111;
+  color:white;
+  padding:20px;
+}
 
-    h1 {
-      font-size: 48px;
-      margin-bottom: 10px;
-    }
+.board{
+  display:flex;
+  gap:20px;
+}
 
-    .updated {
-      color: #999;
-      margin-bottom: 30px;
-      font-size: 20px;
-    }
+.column{
+  background:#222;
+  padding:20px;
+  border-radius:16px;
+  width:300px;
+}
 
-    .card {
-      background: #f3f3f3;
-      color: #111;
-      border-radius: 30px;
-      padding: 30px;
-      margin-bottom: 25px;
-    }
-
-    .card h2 {
-      font-size: 42px;
-      margin-bottom: 20px;
-      color: #ffffff;
-    }
-
-    .status {
-      font-size: 26px;
-      color: #8a6b00;
-      margin-top: 15px;
-      margin-bottom: 20px;
-    }
-
-    pre {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      font-size: 24px;
-      line-height: 1.8;
-      color: #444;
-      margin-top: 20px;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 60px;
-      color: #888;
-      font-size: 18px;
-    }
-  </style>
+.card{
+  background:#333;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:10px;
+}
+</style>
 </head>
 
 <body>
 
-  <h1>📅 Linear Calendar Dashboard</h1>
+<h1>📊 Linear Calendar Dashboard</h1>
 
-  <div class="updated">
-    🕒 Updated: ${new Date().toLocaleString("ja-JP")}
-  </div>
+<div class="board">
 
-  ${issues.map(issue => `
-    <div class="card">
+<div class="column">
+<h2>📝 Todo</h2>
+${
+  todo.length
+    ? todo.map(i => `<div class="card">${i.title}</div>`).join("")
+    : "<p>データなし</p>"
+}
+</div>
 
-      <h2>${issue.title}</h2>
+<div class="column">
+<h2>🚧 In Progress</h2>
+${
+  inProgress.length
+    ? inProgress.map(i => `<div class="card">${i.title}</div>`).join("")
+    : "<p>データなし</p>"
+}
+</div>
 
-      <div class="status">
-        ● ${issue.state.name}
-      </div>
+<div class="column">
+<h2>✅ Done</h2>
+${
+  done.length
+    ? done.map(i => `<div class="card">${i.title}</div>`).join("")
+    : "<p>データなし</p>"
+}
+</div>
 
-      <pre>${issue.description || "データなし"}</pre>
-
-    </div>
-  `).join("")}
-
-  <div class="footer">
-    Updated from Linear
-  </div>
+</div>
 
 </body>
 </html>
 `;
 
 fs.mkdirSync("dist", { recursive: true });
+
 fs.writeFileSync("dist/index.html", html);
 
-console.log("Dashboard generated!");
+console.log("HTML生成完了");
