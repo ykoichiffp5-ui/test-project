@@ -8,98 +8,84 @@ if (!raw) {
 }
 
 const data = JSON.parse(raw);
-
 const issues = data.data.issues.nodes;
-
-const todo = issues.filter(
-  i => i.state && i.state.name === "Todo"
-);
-
-const inProgress = issues.filter(
-  i => i.state && i.state.name === "In Progress"
-);
-
-const done = issues.filter(
-  i => i.state && i.state.name === "Done"
-);
 
 const html = `
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>Linear Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linear介護ダッシュボード</title>
 
-<style>
-body{
-  font-family:sans-serif;
-  background:#111;
-  color:white;
-  padding:20px;
-}
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 20px;
+    }
 
-.board{
-  display:flex;
-  gap:20px;
-}
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
 
-.column{
-  background:#222;
-  padding:20px;
-  border-radius:16px;
-  width:300px;
-}
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
 
-.card{
-  background:#333;
-  padding:10px;
-  margin-bottom:10px;
-  border-radius:10px;
-}
-</style>
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #222;
+    }
+
+    .state {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #4f46e5;
+      font-size: 14px;
+    }
+  </style>
 </head>
 
 <body>
+  <h1>📊 Linear介護ダッシュボード</h1>
 
-<h1>📊 Linear Calendar Dashboard</h1>
-
-<div class="board">
-
-<div class="column">
-<h2>📝 Todo</h2>
-${
-  todo.length
-    ? todo.map(i => `<div class="card">${i.title}</div>`).join("")
-    : "<p>データなし</p>"
-}
-</div>
-
-<div class="column">
-<h2>🚧 In Progress</h2>
-${
-  inProgress.length
-    ? inProgress.map(i => `<div class="card">${i.title}</div>`).join("")
-    : "<p>データなし</p>"
-}
-</div>
-
-<div class="column">
-<h2>✅ Done</h2>
-${
-  done.length
-    ? done.map(i => `<div class="card">${i.title}</div>`).join("")
-    : "<p>データなし</p>"
-}
-</div>
-
-</div>
+  <div class="grid">
+    ${issues.map(issue => `
+      <div class="card">
+        <div class="title">${issue.title}</div>
+        <div class="state">${issue.state.name}</div>
+      </div>
+    `).join("")}
+  </div>
 
 </body>
 </html>
 `;
 
-fs.mkdirSync("dist", { recursive: true });
+if (!fs.existsSync("dist")) {
+  fs.mkdirSync("dist");
+}
 
 fs.writeFileSync("dist/index.html", html);
 
-console.log("HTML生成完了");
+console.log("ダッシュボード生成完了");
+
+
+
