@@ -1,11 +1,12 @@
 name: Auto Dashboard
 
 on:
-  workflow_dispatch:
-
   push:
     branches:
       - main
+  workflow_dispatch:
+  schedule:
+    - cron: "0 9 * * *"
 
 jobs:
   build:
@@ -18,38 +19,61 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "18"
 
+      # 👇 Linearデータ取得
       - name: Fetch Linear Data
-        env:
-          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        id: fetch
         run: |
-          curl -X POST https://api.linear.app/graphql \
-          -H "Content-Type: application/json" \
+          response=$(curl -s -X POST https://api.linear.app/graphql \
           -H "Authorization: $LINEAR_API_KEY" \
-          -d '{
-            "query":"{
-              issues(first:20){
-                nodes{
-                  title
-                  description
-                  createdAt
-                  state{
-                    name
-                  }
+          -H "Content-Type: application/json" \
+          -d '{"query":"{
+            issues(first: 10) {
+              nodes {
+                title
+                priority
+                state {
+                  name
+                }
+                assignee {
+                  name
                 }
               }
-            }"
-          }' > linear-data.json
+            }
+          }"}')
 
-      - name: Generate Dashboard
+          echo "data=$response" >> $GITHUB_OUTPUT
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+
+      # 👇 generate.js 実行
+      - name: Generate HTML
         run: node generate.js
+        env:
+          LINEAR_DATA: ${{ steps.fetch.outputs.data }}
 
       - name: Debug HTML
         run: cat dist/index.html
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Check dist
+        run: ls -R
+
+      - name: Deploy to Surge
+        run: |
+          npm install -g surge
+          surge ./dist koichi-dashboard.surge.sh --token $SURGE_TOKEN
+        env:
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+
+      - name: Send Email
+        uses: dawidd6/action-send-mail@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: ダッシュボード更新
+          to: ${{ secrets.EMAIL_TO }}
+          from: Dashboard Bot
+          html_body: file://dist/index.html
