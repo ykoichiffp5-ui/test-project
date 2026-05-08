@@ -1,13 +1,19 @@
 const fs = require("fs");
 
-const raw = process.env.LINEAR_DATA;
+const raw = fs.readFileSync("linear-data.json", "utf8");
 
 if (!raw) {
-  console.error("LINEAR_DATAが空です");
+  console.error("linear-data.json が空です");
   process.exit(1);
 }
 
 const data = JSON.parse(raw);
+
+if (!data.data || !data.data.issues) {
+  console.error("issuesデータ取得失敗");
+  process.exit(1);
+}
+
 const issues = data.data.issues.nodes;
 
 const html = `
@@ -46,13 +52,13 @@ const html = `
     }
 
     .card h2 {
-      font-size: 42px;
+      font-size: 32px;
       margin-bottom: 20px;
-      color: #ffffff;
+      color: #111;
     }
 
     .status {
-      font-size: 26px;
+      font-size: 22px;
       color: #8a6b00;
       margin-top: 15px;
       margin-bottom: 20px;
@@ -61,8 +67,8 @@ const html = `
     pre {
       white-space: pre-wrap;
       word-wrap: break-word;
-      font-size: 24px;
-      line-height: 1.8;
+      font-size: 18px;
+      line-height: 1.6;
       color: #444;
       margin-top: 20px;
     }
@@ -87,10 +93,10 @@ const html = `
   ${issues.map(issue => `
     <div class="card">
 
-      <h2>${issue.title}</h2>
+      <h2>${issue.title || "タイトルなし"}</h2>
 
       <div class="status">
-        ● ${issue.state.name}
+        ● ${issue.state?.name || "未設定"}
       </div>
 
       <pre>${issue.description || "データなし"}</pre>
@@ -107,6 +113,7 @@ const html = `
 `;
 
 fs.mkdirSync("dist", { recursive: true });
+
 fs.writeFileSync("dist/index.html", html);
 
 console.log("Dashboard generated!");
