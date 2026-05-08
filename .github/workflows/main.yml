@@ -21,7 +21,7 @@ jobs:
       - name: Fetch Linear Data
         run: |
           curl -X POST https://api.linear.app/graphql \
-          -H "Authorization: ${{ secrets.LINEAR_API_KEY }}" \
+          -H "Authorization:Bearer ${{ secrets.LINEAR_API_KEY }}" \
           -H "Content-Type: application/json" \
           -d '{
             "query": "{ issues(first: 20) { nodes { title state { name } } } }"
