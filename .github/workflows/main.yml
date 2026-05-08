@@ -35,6 +35,7 @@ jobs:
               issues(first:20){
                 nodes{
                   title
+                  description
                   createdAt
                   state{
                     name
